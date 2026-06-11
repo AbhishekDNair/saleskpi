@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales KPI Analytics Dashboard & API</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Top Header & Controls Panel -->
+    <header>
+      <div class="brand-section">
+        <h1>Sales Analytics</h1>
+        <p>Real-time corporate performance KPIs and transactional ingestion engine</p>
+      </div>
+      
+      <div class="controls-panel">
+        <!-- Date Filters -->
+        <div class="control-group">
+          <label for="filter-startDate">From</label>
+          <input type="date" id="filter-startDate">
+        </div>
+        <div class="control-group">
+          <label for="filter-endDate">To</label>
+          <input type="date" id="filter-endDate">
+        </div>
+        
+        <!-- Category Filter -->
+        <div class="control-group">
+          <label for="filter-category">Category</label>
+          <select id="filter-category">
+            <option value="">All Categories</option>
+            <option value="Technology">Technology</option>
+            <option value="Office Supplies">Office Supplies</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Apparel">Apparel</option>
+          </select>
+        </div>
+
+        <!-- Region Filter -->
+        <div class="control-group">
+          <label for="filter-region">Region</label>
+          <select id="filter-region">
+            <option value="">All Regions</option>
+            <option value="North">North</option>
+            <option value="South">South</option>
+            <option value="East">East</option>
+            <option value="West">West</option>
+          </select>
+        </div>
+
+        <button class="btn btn-secondary" id="btn-export">
+          <i data-lucide="download"></i> Export CSV
+        </button>
+        <a href="/api-docs" target="_blank" class="btn btn-secondary" style="text-decoration: none;">
+          <i data-lucide="terminal"></i> API Docs
+        </a>
+        <button class="btn btn-primary" id="btn-add-transaction">
+          <i data-lucide="plus"></i> New Transaction
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI Summary Row -->
+    <section class="kpi-grid">
+      <!-- KPI 1: Revenue -->
+      <div class="glass-card kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Total Revenue</span>
+          <div class="kpi-icon-wrapper">
+            <i data-lucide="dollar-sign"></i>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-revenue">$0.00</div>
+        <div class="kpi-footer" id="kpi-revenue-footer">
+          <span class="kpi-growth" id="kpi-revenue-growth">
+            <i data-lucide="trending-up"></i> 0%
+          </span>
+          <span class="kpi-growth-text">vs previous period</span>
+        </div>
+      </div>
+
+      <!-- KPI 2: Total Orders -->
+      <div class="glass-card kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Total Orders</span>
+          <div class="kpi-icon-wrapper">
+            <i data-lucide="shopping-bag"></i>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-orders">0</div>
+        <div class="kpi-footer" id="kpi-orders-footer">
+          <span class="kpi-growth" id="kpi-orders-growth">
+            <i data-lucide="trending-up"></i> 0%
+          </span>
+          <span class="kpi-growth-text">vs previous period</span>
+        </div>
+      </div>
+
+      <!-- KPI 3: Average Order Value -->
+      <div class="glass-card kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Average Order Value</span>
+          <div class="kpi-icon-wrapper">
+            <i data-lucide="credit-card"></i>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-aov">$0.00</div>
+        <div class="kpi-footer" id="kpi-aov-footer">
+          <span class="kpi-growth" id="kpi-aov-growth">
+            <i data-lucide="trending-up"></i> 0%
+          </span>
+          <span class="kpi-growth-text">vs previous period</span>
+        </div>
+      </div>
+
+      <!-- KPI 4: Conversion Rate -->
+      <div class="glass-card kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Conversion Rate</span>
+          <div class="kpi-icon-wrapper">
+            <i data-lucide="percent"></i>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-conversion">0.0%</div>
+        <div class="kpi-footer" id="kpi-conversion-footer">
+          <span class="kpi-growth" id="kpi-conversion-growth">
+            <i data-lucide="trending-up"></i> 0%
+          </span>
+          <span class="kpi-growth-text">vs previous period</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Dashboard Metrics Visualizations -->
+    <section class="dashboard-grid">
+      <!-- Sales Trend Chart -->
+      <div class="glass-card col-8">
+        <div class="chart-header">
+          <h2 class="chart-title">Revenue & Orders Performance Trend</h2>
+          <span class="kpi-growth-text">Monthly breakdown</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-trend"></canvas>
+        </div>
+      </div>
+
+      <!-- Sales by Region -->
+      <div class="glass-card col-4">
+        <div class="chart-header">
+          <h2 class="chart-title">Sales by Region</h2>
+          <span class="kpi-growth-text">Geo share</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-regions"></canvas>
+        </div>
+      </div>
+
+      <!-- Category Sales Share -->
+      <div class="glass-card col-4">
+        <div class="chart-header">
+          <h2 class="chart-title">Category Revenue Distribution</h2>
+          <span class="kpi-growth-text">Segment Share</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-categories"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Performing Products -->
+      <div class="glass-card col-4">
+        <div class="chart-header">
+          <h2 class="chart-title">Top Products</h2>
+          <span class="kpi-growth-text">By Revenue</span>
+        </div>
+        <div class="list-panel" id="list-products">
+          <!-- Populated by JS -->
+          <div class="list-item">Loading top products...</div>
+        </div>
+      </div>
+
+      <!-- Sales Representative Leaderboard -->
+      <div class="glass-card col-4">
+        <div class="chart-header">
+          <h2 class="chart-title">Sales Representatives</h2>
+          <span class="kpi-growth-text">Closed Performance</span>
+        </div>
+        <div class="list-panel" id="list-reps">
+          <!-- Populated by JS -->
+          <div class="list-item">Loading sales representatives...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Detailed Transactions Ledger -->
+    <section class="glass-card">
+      <div class="table-panel-header">
+        <h2 class="chart-title">Sales Transactions Ledger</h2>
+        <div class="table-search">
+          <i data-lucide="search" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+          <input type="text" id="search-input" placeholder="Search by customer, product, rep, ID...">
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Region</th>
+              <th>Rep</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="transactions-body">
+            <!-- Populated by JS -->
+            <tr>
+              <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading transactions...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-controls">
+        <span id="pagination-info">Showing page 1 of 1 (0 total records)</span>
+        <div class="pagination-buttons">
+          <button class="pagination-btn" id="pagination-prev" disabled>Previous</button>
+          <button class="pagination-btn" id="pagination-next" disabled>Next</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Modal: Add Sales Transaction -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Record Sales Transaction</h3>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <form id="transaction-form">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label for="form-customerName">Customer Name</label>
+              <input type="text" id="form-customerName" required placeholder="e.g. Acme Corporation">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-category">Product Category</label>
+              <select id="form-category" required>
+                <option value="">Select Category</option>
+                <option value="Technology">Technology</option>
+                <option value="Office Supplies">Office Supplies</option>
+                <option value="Furniture">Furniture</option>
+                <option value="Apparel">Apparel</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="form-productName">Product Name</label>
+              <select id="form-productName" required disabled>
+                <option value="">Select a Category First</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="form-quantity">Quantity</label>
+              <input type="number" id="form-quantity" min="1" required placeholder="1">
+            </div>
+
+            <div class="form-group">
+              <label for="form-price">Unit Price ($)</label>
+              <input type="number" id="form-price" min="0.01" step="0.01" required placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+              <label for="form-region">Region</label>
+              <select id="form-region" required>
+                <option value="">Select Region</option>
+                <option value="North">North</option>
+                <option value="South">South</option>
+                <option value="East">East</option>
+                <option value="West">West</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="form-repName">Sales Representative</label>
+              <select id="form-repName" required>
+                <option value="">Select Representative</option>
+                <option value="Sarah Jenkins">Sarah Jenkins</option>
+                <option value="Michael Chang">Michael Chang</option>
+                <option value="Amanda Ross">Amanda Ross</option>
+                <option value="David Vance">David Vance</option>
+                <option value="Elena Rostova">Elena Rostova</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="form-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast notification system -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Client JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
