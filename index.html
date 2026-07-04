@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Performance Dashboard | Enterprise Analytics</title>
+  <meta name="description" content="Enterprise Sales KPI Dashboard — monitor revenue, growth, pipeline, and team performance in real time with interactive charts and filters." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<!-- Mobile Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="app-wrapper">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <a class="sidebar-logo" href="#">
+      <div class="logo-icon">SP</div>
+      <div class="logo-text">
+        <span class="logo-name">SalesPulse</span>
+        <span class="logo-tag">Analytics Platform</span>
+      </div>
+    </a>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <a class="nav-item active" id="nav-dashboard">
+        <span class="nav-icon"><i data-lucide="layout-dashboard" width="16" height="16"></i></span>
+        <span>Dashboard</span>
+        <span class="nav-badge">Live</span>
+      </a>
+      <a class="nav-item" id="nav-analytics">
+        <span class="nav-icon"><i data-lucide="bar-chart-2" width="16" height="16"></i></span>
+        <span>Analytics</span>
+      </a>
+      <a class="nav-item" id="nav-pipeline">
+        <span class="nav-icon"><i data-lucide="git-branch" width="16" height="16"></i></span>
+        <span>Pipeline</span>
+      </a>
+
+      <div class="divider" style="margin: 8px 10px;"></div>
+      <div class="nav-section-label">Sales</div>
+
+      <a class="nav-item" id="nav-revenue">
+        <span class="nav-icon"><i data-lucide="trending-up" width="16" height="16"></i></span>
+        <span>Revenue</span>
+      </a>
+      <a class="nav-item" id="nav-customers">
+        <span class="nav-icon"><i data-lucide="users" width="16" height="16"></i></span>
+        <span>Customers</span>
+      </a>
+      <a class="nav-item" id="nav-products">
+        <span class="nav-icon"><i data-lucide="package" width="16" height="16"></i></span>
+        <span>Products</span>
+      </a>
+      <a class="nav-item" id="nav-targets">
+        <span class="nav-icon"><i data-lucide="target" width="16" height="16"></i></span>
+        <span>Targets</span>
+      </a>
+
+      <div class="divider" style="margin: 8px 10px;"></div>
+      <div class="nav-section-label">Team</div>
+
+      <a class="nav-item" id="nav-team">
+        <span class="nav-icon"><i data-lucide="user-check" width="16" height="16"></i></span>
+        <span>Salespeople</span>
+      </a>
+      <a class="nav-item" id="nav-regions">
+        <span class="nav-icon"><i data-lucide="globe" width="16" height="16"></i></span>
+        <span>Regions</span>
+      </a>
+      <a class="nav-item" id="nav-reports">
+        <span class="nav-icon"><i data-lucide="file-bar-chart" width="16" height="16"></i></span>
+        <span>Reports</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="nav-item" id="nav-settings">
+        <span class="nav-icon"><i data-lucide="settings" width="16" height="16"></i></span>
+        <span>Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main-content" id="mainContent">
+
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle" data-tooltip="Toggle Sidebar">
+          <i data-lucide="menu" width="16" height="16"></i>
+        </button>
+        <div>
+          <div class="header-title">Sales Performance Dashboard</div>
+          <div class="header-subtitle" id="lastUpdated">Last updated: Loading…</div>
+        </div>
+      </div>
+
+      <div class="header-filters">
+        <span class="filter-label">Period:</span>
+        <select class="filter-select" id="filterPeriod">
+          <option value="this_year">This Year</option>
+          <option value="last_6m">Last 6 Months</option>
+          <option value="last_3m">Last 3 Months</option>
+          <option value="last_month">Last Month</option>
+          <option value="this_quarter">This Quarter</option>
+          <option value="ytd">YTD</option>
+        </select>
+
+        <span class="filter-label">Region:</span>
+        <select class="filter-select" id="filterRegion">
+          <option value="all">All Regions</option>
+          <option value="North America">North America</option>
+          <option value="Europe">Europe</option>
+          <option value="Asia Pacific">Asia Pacific</option>
+          <option value="Latin America">Latin America</option>
+          <option value="Middle East">Middle East</option>
+        </select>
+
+        <span class="filter-label">Category:</span>
+        <select class="filter-select" id="filterCategory">
+          <option value="all">All Categories</option>
+          <option value="Software">Software</option>
+          <option value="Hardware">Hardware</option>
+          <option value="Services">Services</option>
+          <option value="Cloud">Cloud</option>
+          <option value="Support">Support</option>
+        </select>
+
+        <span class="filter-label">Salesperson:</span>
+        <select class="filter-select" id="filterSalesperson">
+          <option value="all">All Salespeople</option>
+        </select>
+
+        <span class="filter-label">Segment:</span>
+        <select class="filter-select" id="filterSegment">
+          <option value="all">All Segments</option>
+          <option value="Enterprise">Enterprise</option>
+          <option value="SMB">SMB</option>
+          <option value="Mid-Market">Mid-Market</option>
+          <option value="Startup">Startup</option>
+        </select>
+
+        <span class="filter-label">Channel:</span>
+        <select class="filter-select" id="filterChannel">
+          <option value="all">All Channels</option>
+          <option value="Direct">Direct</option>
+          <option value="Partner">Partner</option>
+          <option value="Online">Online</option>
+          <option value="Inbound">Inbound</option>
+        </select>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-icon" id="themeToggleBtn" data-tooltip="Toggle Dark Mode">
+          <i data-lucide="moon" width="15" height="15" id="themeIcon"></i>
+        </button>
+        <button class="btn btn-outline" id="btnExportPDF" data-tooltip="Export as PDF">
+          <i data-lucide="file-text" width="14" height="14"></i>
+          Export PDF
+        </button>
+        <button class="btn btn-success" id="btnExportExcel" data-tooltip="Download Excel">
+          <i data-lucide="download" width="14" height="14"></i>
+          Excel
+        </button>
+      </div>
+    </header>
+
+    <!-- Dashboard Body -->
+    <main class="dashboard-body">
+
+      <!-- Active Filter Chips -->
+      <div class="filter-chips-row" id="filterChipsRow" style="display:none;"></div>
+
+      <!-- ====== KPI CARDS ====== -->
+      <section>
+        <div class="kpi-grid" id="kpiGrid">
+          <!-- 1 - Total Revenue -->
+          <div class="kpi-card" style="--kpi-color:#2563eb;--kpi-bg:#dbeafe;" id="kpi-revenue">
+            <div class="kpi-top">
+              <div>
+                <div class="kpi-label">Total Revenue</div>
+                <div class="kpi-value" id="kv-revenue">$0</div>
+              </div>
+              <div class="kpi-icon"><i data-lucide="dollar-sign" width="20" height="20"></i></div>
+            </div>
+            <div class="kpi-bottom">
+              <div class="kpi-change" id="kc-revenue"><span>0%</span></div>
+              <div class="kpi-sparkline-wrap"><canvas id="spark-revenue"></canvas></div>
+            </div>
+          </div>
+
+          <!-- 2 - Total Sales -->
+          <div class="kpi-card" style="--kpi-color:#8b5cf6;--kpi-bg:#ede9fe;" id="kpi-sales">
+            <div class="kpi-top">
+              <div>
+                <div class="kpi-label">Total Sales</div>
+                <div class="kpi-value" id="kv-sales">0</div>
+              </div>
+              <div class="kpi-icon"><i data-lucide="shopping-bag" width="20" height="20"></i></div>
+            </div>
+            <div class="kpi-bottom">
+              <div class="kpi-change" id="kc-sales"><span>0%</span></div>
+              <div class="kpi-sparkline-wrap"><canvas id="spark-sales"></canvas></div>
+            </div>
+          </div>
+
+          <!-- 3 - Gross Profit -->
+          <div class="kpi-card" style="--kpi-color:#10b981;--kpi-bg:#d1fae5;" id="kpi-profit">
+            <div class="kpi-top">
+              <div>
+                <div class="kpi-label">Gross Profit</div>
+                <div class="kpi-value" id="kv-profit">$0</div>
+              </div>
+              <div class="kpi-icon"><i data-lucide="trending-up" width="20" height="20"></i></div>
+            </div>
+            <div class="kpi-bottom">
+              <div class="kpi-change" id="kc-profit"><span>0%</span></div>
+              <div class="kpi-sparkline-wrap"><canvas id="spark-profit"></canvas></div>
+            </div>
+          </div>
+
+          <!-- 4 - Conversion Rate -->
+          <div class="kpi-card" style="--kpi-color:#f59e0b;--kpi-bg:#fef3c7;" id="kpi-conv">
+            <div class="kpi-top">
+              <div>
+                <div class="kpi-label">Conversion Rate</div>
+                <div class="kpi-value" id="kv-conv">0%</div>
+              </div>
+              <div class="kpi-icon"><i data-lucide="target" width="20" height="20"></i></div>
+            </div>
+            <div class="kpi-bottom">
+              <div class="kpi-change" id="kc-conv"><span>0%</span></div>
+              <div class="kpi-sparkline-wrap"><canvas id="spark-conv"></canvas></div>
+            </div>
+          </div>
+
+          <!-- 5 - Avg Order Value -->
+          <div class="kpi-card" style="--kpi-color:#06b6d4;--kpi-bg:#cffafe;" id="kpi-aov">
+            <div class="kpi-top">
+              <div>
+                <div class="kpi-label">Avg Order Value</div>
+                <div class="kpi-value" id="kv-aov">$0</div>
+              </div>
+              <div class="kpi-icon"><i data-lucide="receipt" width="20" height="20"></i></div>
+            </div>
+            <div class="kpi-bottom">
+              <div class="kpi-change" id="kc-aov"><span>0%</span></div>
+              <div class="kpi-sparkline-wrap"><canvas id="spark-aov"></canvas></div>
+            </div>
+          </div>
+
+          <!-- 6 - Sales Growth -->
+          <div class="kpi-card" style="--kpi-color:#ef4444;--kpi-bg:#fee2e2;" id="kpi-growth">
+            <div class="kpi-top">
+              <div>
+                <div class="kpi-label">Sales Growth</div>
+                <div class="kpi-value" id="kv-growth">0%</div>
+              </div>
+              <div class="kpi-icon"><i data-lucide="activity" width="20" height="20"></i></div>
+            </div>
+            <div class="kpi-bottom">
+              <div class="kpi-change" id="kc-growth"><span>YoY</span></div>
+              <div class="kpi-sparkline-wrap"><canvas id="spark-growth"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== PIPELINE MINI STATS ====== -->
+      <section>
+        <div class="mini-stats-grid" id="miniStatsGrid">
+          <div class="mini-stat-card">
+            <div class="mini-stat-icon" style="background:#dbeafe;color:#2563eb;"><i data-lucide="git-pull-request" width="22" height="22"></i></div>
+            <div>
+              <div class="mini-stat-label">Pipeline Value</div>
+              <div class="mini-stat-value" id="ms-pipeline">$0</div>
+              <div class="mini-stat-sub" id="ms-pipeline-sub">— open opportunities</div>
+            </div>
+          </div>
+          <div class="mini-stat-card">
+            <div class="mini-stat-icon" style="background:#ede9fe;color:#8b5cf6;"><i data-lucide="briefcase" width="22" height="22"></i></div>
+            <div>
+              <div class="mini-stat-label">Open Opportunities</div>
+              <div class="mini-stat-value" id="ms-opps">0</div>
+              <div class="mini-stat-sub" id="ms-opps-sub">across all stages</div>
+            </div>
+          </div>
+          <div class="mini-stat-card">
+            <div class="mini-stat-icon" style="background:#fee2e2;color:#ef4444;"><i data-lucide="x-circle" width="22" height="22"></i></div>
+            <div>
+              <div class="mini-stat-label">Lost Deals</div>
+              <div class="mini-stat-value" id="ms-lost">0</div>
+              <div class="mini-stat-sub" id="ms-lost-sub">— avg deal size $0</div>
+            </div>
+          </div>
+          <div class="mini-stat-card">
+            <div class="mini-stat-icon" style="background:#d1fae5;color:#10b981;"><i data-lucide="refresh-cw" width="22" height="22"></i></div>
+            <div>
+              <div class="mini-stat-label">Repeat Customers</div>
+              <div class="mini-stat-value" id="ms-repeat">0%</div>
+              <div class="mini-stat-sub" id="ms-repeat-sub">of total customers</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== ROW 1: Monthly Trend + Category ====== -->
+      <section class="charts-row charts-row-60-40">
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#dbeafe;color:#2563eb;"><i data-lucide="trending-up" width="14" height="14"></i></div>
+              Monthly Sales Trend
+            </div>
+            <div class="tabs">
+              <button class="tab-btn active" data-chart="monthlyTrend" data-type="revenue">Revenue</button>
+              <button class="tab-btn" data-chart="monthlyTrend" data-type="volume">Volume</button>
+              <button class="tab-btn" data-chart="monthlyTrend" data-type="profit">Profit</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding-bottom:16px;">
+            <div class="chart-container" style="height:240px;">
+              <canvas id="chartMonthlyTrend"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#ede9fe;color:#8b5cf6;"><i data-lucide="layers" width="14" height="14"></i></div>
+              Revenue by Category
+            </div>
+            <div class="tabs">
+              <button class="tab-btn active" data-chart="categoryChart" data-type="stacked">Stacked</button>
+              <button class="tab-btn" data-chart="categoryChart" data-type="grouped">Grouped</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding-bottom:16px;">
+            <div class="chart-container" style="height:240px;">
+              <canvas id="chartCategory"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== ROW 2: Region + Top 10 Products ====== -->
+      <section class="charts-row charts-row-2">
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#cffafe;color:#06b6d4;"><i data-lucide="globe" width="14" height="14"></i></div>
+              Sales by Region
+            </div>
+            <span style="font-size:11px;color:var(--text-muted);">Click a bar to filter</span>
+          </div>
+          <div class="card-body" style="padding-bottom:16px;">
+            <div class="chart-container" style="height:240px;">
+              <canvas id="chartRegion"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#fef3c7;color:#f59e0b;"><i data-lucide="award" width="14" height="14"></i></div>
+              Top 10 Products
+            </div>
+            <span style="font-size:11px;color:var(--text-muted);">By Revenue</span>
+          </div>
+          <div class="card-body" style="padding-bottom:16px;">
+            <div class="chart-container" style="height:240px;">
+              <canvas id="chartTopProducts"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== ROW 3: Funnel + Conversion by Salesperson ====== -->
+      <section class="charts-row charts-row-2">
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#dbeafe;color:#2563eb;"><i data-lucide="filter" width="14" height="14"></i></div>
+              Sales Funnel
+            </div>
+            <span style="font-size:11px;color:var(--text-muted);" id="funnelTotal">0 total leads</span>
+          </div>
+          <div class="funnel-wrap" id="salesFunnel"></div>
+        </div>
+
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#d1fae5;color:#10b981;"><i data-lucide="percent" width="14" height="14"></i></div>
+              Conversion Rate by Salesperson
+            </div>
+          </div>
+          <div class="card-body" style="padding-bottom:16px;">
+            <div class="chart-container" style="height:240px;">
+              <canvas id="chartSalespersonConv"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== ROW 4: Revenue vs Target + Profit Margin ====== -->
+      <section class="charts-row charts-row-2">
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#fee2e2;color:#ef4444;"><i data-lucide="crosshair" width="14" height="14"></i></div>
+              Revenue vs Target
+            </div>
+            <span style="font-size:11px;color:var(--text-muted);">Bullet chart by region</span>
+          </div>
+          <div class="bullet-chart-wrap" id="bulletChart"></div>
+        </div>
+
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#d1fae5;color:#10b981;"><i data-lucide="area-chart" width="14" height="14"></i></div>
+              Profit Margin Trend
+            </div>
+          </div>
+          <div class="card-body" style="padding-bottom:16px;">
+            <div class="chart-container" style="height:240px;">
+              <canvas id="chartProfitMargin"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== ROW 5: Forecast vs Actual + Customer Acquisition ====== -->
+      <section class="charts-row charts-row-2">
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#ede9fe;color:#8b5cf6;"><i data-lucide="bar-chart-2" width="14" height="14"></i></div>
+              Forecast vs Actual
+            </div>
+          </div>
+          <div class="card-body" style="padding-bottom:16px;">
+            <div class="chart-container" style="height:240px;">
+              <canvas id="chartForecast"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#cffafe;color:#06b6d4;"><i data-lucide="user-plus" width="14" height="14"></i></div>
+              Customer Acquisition Trend
+            </div>
+          </div>
+          <div class="card-body" style="padding-bottom:16px;">
+            <div class="chart-container" style="height:240px;">
+              <canvas id="chartAcquisition"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== ROW 6: Revenue by Segment Donut + Heatmap ====== -->
+      <section class="charts-row charts-row-2">
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#fef3c7;color:#f59e0b;"><i data-lucide="pie-chart" width="14" height="14"></i></div>
+              Revenue by Customer Segment
+            </div>
+          </div>
+          <div style="display:flex;gap:0;padding:12px 20px 8px;">
+            <div style="flex:1;min-height:200px;position:relative;">
+              <canvas id="chartSegment" style="max-height:200px;"></canvas>
+            </div>
+            <div id="segmentLegend" class="donut-legend" style="padding:0 0 0 16px;justify-content:center;min-width:160px;"></div>
+          </div>
+        </div>
+
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#dbeafe;color:#2563eb;"><i data-lucide="calendar" width="14" height="14"></i></div>
+              Daily Sales Heatmap
+            </div>
+            <span style="font-size:11px;color:var(--text-muted);">Last 52 weeks</span>
+          </div>
+          <div class="heatmap-wrap" id="heatmapWrap"></div>
+        </div>
+      </section>
+
+      <!-- ====== BOTTOM: Table + Leaderboard ====== -->
+      <section class="bottom-section">
+
+        <!-- Recent Sales Table -->
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <div class="title-icon" style="background:#dbeafe;color:#2563eb;"><i data-lucide="table" width="14" height="14"></i></div>
+                Recent Sales Transactions
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="tableCount">Showing 0 records</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="tableSearch" placeholder="Search orders…"
+                style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);color:var(--text-primary);font-size:12px;font-family:var(--font);width:180px;outline:none;" />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-sort="orderId">Order ID <span class="sort-icon">↕</span></th>
+                  <th data-sort="customer">Customer <span class="sort-icon">↕</span></th>
+                  <th data-sort="product">Product <span class="sort-icon">↕</span></th>
+                  <th data-sort="salesperson">Salesperson <span class="sort-icon">↕</span></th>
+                  <th data-sort="region">Region <span class="sort-icon">↕</span></th>
+                  <th data-sort="revenue">Revenue <span class="sort-icon">↕</span></th>
+                  <th data-sort="status">Status <span class="sort-icon">↕</span></th>
+                  <th data-sort="date">Date <span class="sort-icon">↕</span></th>
+                </tr>
+              </thead>
+              <tbody id="salesTableBody">
+                <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted);">Loading data…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-pagination">
+            <span id="paginationInfo">Page 1 of 1</span>
+            <div class="pagination-btns" id="paginationBtns"></div>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="title-icon" style="background:#fef3c7;color:#f59e0b;"><i data-lucide="trophy" width="14" height="14"></i></div>
+              Top Performing Salespeople
+            </div>
+            <span style="font-size:11px;color:var(--text-muted);" id="leaderPeriod">This Period</span>
+          </div>
+          <div class="card-body" style="padding:8px 12px 16px;">
+            <div class="leaderboard-list" id="leaderboardList"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div><!-- /main-content -->
+</div><!-- /app-wrapper -->
+
+<script src="app.js"></script>
+</body>
+</html>
